@@ -1143,10 +1143,10 @@ export default function AdminDashboard() {
                                     alignItems: 'center',
                                     gap: '12px',
                                     overflowX: 'auto',
-                                    MsOverflowStyle: 'none',
+                                    msOverflowStyle: 'none',
                                     scrollbarWidth: 'none',
                                     WebkitOverflowScrolling: 'touch',
-                                }} className="admin-tabs-scroll-container">
+                                } as any} className="admin-tabs-scroll-container">
                                     <style>{`
                                         .admin-tabs-scroll-container::-webkit-scrollbar { display: none; }
                                     `}</style>
