@@ -461,45 +461,60 @@ export default function CatalogPage() {
                                 position: 'relative',
                                 zIndex: 10,
                                 display: 'grid',
-                                gridTemplateColumns: '1fr',
-                                maxHeight: '90vh',
+                                maxHeight: '95vh',
+                                margin: '20px'
                             }}
                             className="md:grid-cols-2 product-modal-container"
                         >
                             <style>{`
+                                .product-modal-container {
+                                    grid-template-columns: 1fr;
+                                }
                                 .product-modal-image {
-                                    height: 250px;
+                                    height: 300px;
                                 }
                                 .product-modal-content {
-                                    padding: 20px;
+                                    padding: 24px;
+                                    max-height: calc(95vh - 300px);
                                 }
                                 .product-modal-title {
-                                    font-size: 1.5rem;
+                                    font-size: 1.75rem;
                                 }
                                 .product-modal-footer {
                                     position: sticky;
-                                    bottom: -20px;
-                                    margin-bottom: -20px;
+                                    bottom: -24px;
+                                    margin-bottom: -24px;
                                     margin-top: auto;
-                                    padding: 20px;
+                                    padding: 24px;
                                     background: #1a2c28;
                                     z-index: 20;
+                                    border-top: 1px solid rgba(255,255,255,0.05);
                                 }
                                 @media (min-width: 768px) {
+                                    .product-modal-container {
+                                        grid-template-columns: 1.1fr 0.9fr;
+                                        max-width: 1000px;
+                                        height: 650px;
+                                        max-height: 85vh;
+                                    }
                                     .product-modal-image {
-                                        height: auto;
-                                        min-height: 450px;
+                                        height: 100%;
+                                        min-height: 100%;
                                     }
                                     .product-modal-content {
-                                        padding: 32px;
+                                        padding: 40px;
+                                        max-height: 100%;
                                     }
                                     .product-modal-title {
-                                        font-size: 2.25rem;
+                                        font-size: 2.5rem;
                                     }
                                     .product-modal-footer {
                                         position: static;
                                         margin: 0;
+                                        padding: 0;
                                         padding-top: 24px;
+                                        background: transparent;
+                                        border: none;
                                     }
                                 }
                             `}</style>

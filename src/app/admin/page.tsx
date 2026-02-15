@@ -1138,19 +1138,32 @@ export default function AdminDashboard() {
                                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                                 flexWrap: 'wrap', gap: '12px',
                             }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{ display: 'flex', gap: '4px' }}>
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    overflowX: 'auto',
+                                    MsOverflowStyle: 'none',
+                                    scrollbarWidth: 'none',
+                                    WebkitOverflowScrolling: 'touch',
+                                }} className="admin-tabs-scroll-container">
+                                    <style>{`
+                                        .admin-tabs-scroll-container::-webkit-scrollbar { display: none; }
+                                    `}</style>
+                                    <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                                         {['products', 'orders', 'customers', 'subscriptions', 'plans'].map((tab) => (
                                             <button
                                                 key={tab}
                                                 onClick={() => { setActiveTab(tab); setSearchQuery(''); }}
                                                 style={{
-                                                    padding: '8px 16px', borderRadius: '8px', border: 'none',
-                                                    fontSize: '11px', fontWeight: 700, cursor: 'pointer',
-                                                    textTransform: 'uppercase' as const, letterSpacing: '0.1em',
-                                                    background: activeTab === tab ? 'rgba(42,157,124,0.15)' : 'transparent',
+                                                    padding: '10px 18px', borderRadius: '10px', border: 'none',
+                                                    fontSize: '11px', fontWeight: 800, cursor: 'pointer',
+                                                    textTransform: 'uppercase' as const, letterSpacing: '0.12em',
+                                                    background: activeTab === tab ? 'rgba(42,157,124,0.18)' : 'transparent',
                                                     color: activeTab === tab ? 'var(--color-brand-primary)' : '#6b7280',
                                                     borderBottom: activeTab === tab ? '2px solid var(--color-brand-primary)' : '2px solid transparent',
+                                                    whiteSpace: 'nowrap',
+                                                    transition: 'all 0.2s ease',
                                                 }}
                                             >
                                                 {tab === 'products' ? 'Productos' :
