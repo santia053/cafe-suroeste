@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Coffee } from 'lucide-react';
+import { BrandIcon } from './BrandIcon';
 
 interface LogoProps {
     size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -47,16 +47,12 @@ export const Logo: React.FC<LogoProps> = ({
             className={`flex items-center gap-3 transition-transform hover:scale-[1.02] active:scale-[0.98] group ${className}`}
         >
             <div className={`
-                ${containerPadding[size]} 
-                ${borderRadius[size]} 
-                bg-brand-primary 
-                shadow-lg shadow-brand-primary/20 
                 flex items-center justify-center
                 transition-all duration-300
                 group-hover:shadow-brand-primary/40
                 group-hover:-rotate-6
             `}>
-                <Coffee className="text-white" size={iconSizes[size]} strokeWidth={2.5} />
+                <BrandIcon size={iconSizes[size] * 2.2} />
             </div>
             <div className="flex flex-col leading-none">
                 <span className={`

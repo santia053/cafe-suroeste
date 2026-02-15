@@ -13,6 +13,9 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "Café de Origen | Suroeste Antioqueño",
   description: "Plataforma de e-commerce de café de especialidad del suroeste antioqueño.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
