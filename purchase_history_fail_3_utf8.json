@@ -1,0 +1,150 @@
+﻿{
+  "config": {
+    "configFile": "C:\\Users\\SYSTEMMAS PC-1333\\Desktop\\HabilidadesIA\\cafe-origen\\playwright.config.ts",
+    "rootDir": "C:/Users/SYSTEMMAS PC-1333/Desktop/HabilidadesIA/cafe-origen/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/SYSTEMMAS PC-1333/Desktop/HabilidadesIA/cafe-origen/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/SYSTEMMAS PC-1333/Desktop/HabilidadesIA/cafe-origen/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 6,
+    "webServer": {
+      "command": "npm run dev",
+      "port": 3000,
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [
+    {
+      "title": "purchase-history.spec.ts",
+      "file": "purchase-history.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Purchase History & Filters",
+          "file": "purchase-history.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Debe cargar el historial y filtrar por rango de fechas",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 23930,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/\\$55.000/).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/\\$55.000/).first()\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/\\$55.000/).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/\\$55.000/).first()\u001b[22m\n\n    at C:\\Users\\SYSTEMMAS PC-1333\\Desktop\\HabilidadesIA\\cafe-origen\\e2e\\purchase-history.spec.ts:73:58",
+                        "location": {
+                          "file": "C:\\Users\\SYSTEMMAS PC-1333\\Desktop\\HabilidadesIA\\cafe-origen\\e2e\\purchase-history.spec.ts",
+                          "column": 58,
+                          "line": 73
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 71 |\u001b[39m         \u001b[90m// Verificar Carga Inicial\u001b[39m\n \u001b[90m 72 |\u001b[39m         \u001b[90m// Usamos regex extremadamente flexible para el precio (ignora separadores intermedios)\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 73 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/\\$55.000/\u001b[39m)\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m15000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 74 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/\\$120.000/\u001b[39m)\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 75 |\u001b[39m\n \u001b[90m 76 |\u001b[39m         \u001b[90m// --- FILTROS ---\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\SYSTEMMAS PC-1333\\Desktop\\HabilidadesIA\\cafe-origen\\e2e\\purchase-history.spec.ts",
+                            "column": 58,
+                            "line": 73
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/\\$55.000/).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/\\$55.000/).first()\u001b[22m\n\n\n  71 |         // Verificar Carga Inicial\n  72 |         // Usamos regex extremadamente flexible para el precio (ignora separadores intermedios)\n> 73 |         await expect(page.getByText(/\\$55.000/).first()).toBeVisible({ timeout: 15000 });\n     |                                                          ^\n  74 |         await expect(page.getByText(/\\$120.000/).first()).toBeVisible();\n  75 |\n  76 |         // --- FILTROS ---\n    at C:\\Users\\SYSTEMMAS PC-1333\\Desktop\\HabilidadesIA\\cafe-origen\\e2e\\purchase-history.spec.ts:73:58"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T00:15:28.698Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SYSTEMMAS PC-1333\\Desktop\\HabilidadesIA\\cafe-origen\\test-results\\purchase-history-Purchase--504b8-filtrar-por-rango-de-fechas-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\SYSTEMMAS PC-1333\\Desktop\\HabilidadesIA\\cafe-origen\\e2e\\purchase-history.spec.ts",
+                        "column": 58,
+                        "line": 73
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "79d95bb5cacbb411c28f-240099b57891782cf4d7",
+              "file": "purchase-history.spec.ts",
+              "line": 6,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-02-15T00:15:26.324Z",
+    "duration": 26756.962,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

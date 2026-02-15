@@ -1,0 +1,52 @@
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] › e2e\checkout.spec.ts:6:9 › Flujo de Checkout (Guest) › Debe permitir a un usuario invitado completar una compra
+[1A[2K[chromium] › e2e\checkout.spec.ts:6:9 › Flujo de Checkout (Guest) › Debe permitir a un usuario invitado completar una compra
+--- INICIO TEST ---
+
+[1A[2KBROWSER: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+
+[1A[2KBROWSER: [HMR] connected
+
+[1A[2KIntercepted PRODUCTS
+
+[1A[2KBROWSER: [Fast Refresh] rebuilding
+
+[1A[2KBROWSER: [Fast Refresh] done in 166ms
+
+[1A[2KBROWSER: [Fast Refresh] rebuilding
+
+[1A[2KBROWSER: [Fast Refresh] done in 129ms
+
+[1A[2K  1) [chromium] › e2e\checkout.spec.ts:6:9 › Flujo de Checkout (Guest) › Debe permitir a un usuario invitado completar una compra 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('1')
+    Expected: visible
+    Error: strict mode violation: getByText('1') resolved to 2 elements:
+        1) <span class="absolute -top-1.5 -right-1.5 bg-yellow-400 text-black text-[9px] w-5 h-5 rounded-full flex items-center justify-center font-black border-2 border-background-dark">1</span> aka getByRole('button', { name: 'Mi Carrito' })
+        2) <span class="absolute top-0 right-0 bg-brand-primary text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">1</span> aka getByText('1').nth(1)
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('1')[22m
+
+
+      77 |
+      78 |         // Verificar feedback visual (opcional, pero buena práctica)
+    > 79 |         await expect(page.getByText('1')).toBeVisible(); // Badge del carrito
+         |                                           ^
+      80 |
+      81 |         // 5. Ir al Checkout
+      82 |         // Podemos ir directo o abrir el drawer. Vamos directo para agilizar.
+        at C:\Users\SYSTEMMAS PC-1333\Desktop\HabilidadesIA\cafe-origen\e2e\checkout.spec.ts:79:43
+
+    Error Context: test-results\checkout-Flujo-de-Checkout-23d4e-vitado-completar-una-compra-chromium\error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] › e2e\checkout.spec.ts:6:9 › Flujo de Checkout (Guest) › Debe permitir a un usuario invitado completar una compra 
+
+[36m  Serving HTML report at http://localhost:52831. Press Ctrl+C to quit.[39m
