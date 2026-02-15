@@ -78,9 +78,15 @@ export default function Home() {
           </Link>
         </motion.div>
 
-        {/* Footer badge */}
-        <div style={{ marginTop: '32px', textAlign: 'center', opacity: 0.3, fontSize: '9px', letterSpacing: '0.25em', fontWeight: 600, textTransform: 'uppercase' as const }}>
-          Hecho con ♥ en Antioquia
+        {/* Footer Area */}
+        <div style={{ marginTop: '32px', textAlign: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '12px', opacity: 0.5 }}>
+            <Link href="/privacy" className="text-[10px] font-bold uppercase tracking-widest hover:text-brand-primary transition-colors">Privacidad</Link>
+            <Link href="/terms" className="text-[10px] font-bold uppercase tracking-widest hover:text-brand-primary transition-colors">Términos</Link>
+          </div>
+          <div style={{ opacity: 0.3, fontSize: '9px', letterSpacing: '0.25em', fontWeight: 600, textTransform: 'uppercase' as const }}>
+            © {new Date().getFullYear()} Café Suroeste · Hecho con ♥ en Antioquia
+          </div>
         </div>
       </div>
     </div>
