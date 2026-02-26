@@ -48,9 +48,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (error) throw error
 
                 if (mounted) {
-                    setUser(session?.user ?? null)
                     if (session?.user) {
+                        console.log('Session detected:', session.user.email)
+                        setUser(session.user)
                         await fetchProfile(session.user.id, session.user.email!)
+                    } else {
+                        console.log('No active session found')
+                        setUser(null)
                     }
                 }
             } catch (error) {
@@ -134,28 +138,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const loginWithGoogle = async () => {
         try {
-            const redirectUrl = `${window.location.origin}/profile`
-            console.log('Initiating Google OAuth with redirect to:', redirectUrl)
+            // Determine the correct redirect URL based on environment
+            // Using a simple /auth/callback might be cleaner if we had the route, 
+            // but for now we use /profile as configured in the project.
+            const redirectUrl = typeof window !== 'undefined'
+                ? `${window.location.origin}/profile`
+                : ''
+
+            console.log('Initiating Google OAuth request...')
+            console.log('Redirect URL authorized in Supabase should be:', redirectUrl)
 
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: redirectUrl
+                    redirectTo: redirectUrl,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'select_account',
+                    },
                 }
             })
 
-            if (error) throw error
+            if (error) {
+                console.error('Supabase OAuth Error:', error)
+                throw error
+            }
 
             if (data?.url) {
-                console.log('OAuth data received, redirecting to:', data.url)
+                console.log('Successfully received OAuth URL, redirecting...')
                 window.location.href = data.url
             } else {
-                console.warn('No OAuth URL returned from Supabase')
+                console.error('No redirect URL returned from Supabase. Check if Google provider is enabled.')
+                throw new Error('No se pudo obtener la URL de autenticación')
             }
 
             return { error: null }
         } catch (error: any) {
-            console.error('Error in loginWithGoogle:', error)
+            console.error('Catch block in loginWithGoogle:', error)
             return { error }
         }
     }
