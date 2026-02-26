@@ -26,19 +26,24 @@ export default function CatalogPage() {
 
     useEffect(() => {
         fetchProducts()
+
+        // Real-time subscription for product updates
+        const subscription = supabase
+            .channel('products_realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+                console.log('Real-time update detected on products table, refreshing...')
+                fetchProducts() // Simply refresh when any change occurs
+            })
+            .subscribe()
+
+        return () => {
+            subscription.unsubscribe()
+        }
     }, [])
 
-    const fetchProducts = async () => {
+    const fetchProducts = async (retries = 2) => {
         setLoading(true)
         console.log('Fetching products from Supabase...')
-
-        // Safety timeout - increased to 15s to handle potentially cold project starts
-        const timeoutId = setTimeout(() => {
-            if (loading) {
-                console.warn('Product fetch taking longer than 15s...')
-                setLoading(false)
-            }
-        }, 15000)
 
         try {
             const { data, error } = await supabase
@@ -47,6 +52,11 @@ export default function CatalogPage() {
                 .eq('is_published', true)
 
             if (error) {
+                // If it's an abort error and we have retries, try again
+                if (error.message?.includes('AbortError') && retries > 0) {
+                    console.warn(`Fetch aborted, retrying... (${retries} left)`)
+                    return fetchProducts(retries - 1)
+                }
                 console.error('Supabase error fetching products:', error)
                 toast.error('Error al cargar productos. Por favor intente de nuevo.')
                 throw error
@@ -70,14 +80,17 @@ export default function CatalogPage() {
                     price: p.price,
                     stock: p.stock,
                     image_url: p.image_url,
-                    gramaje: p.gramaje || 340
+                    gramaje: p.gramaje || 340,
+                    status: p.status || 'Activo',
+                    is_published: p.is_published ?? true
                 }))
                 setProducts(mappedProducts)
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Unhandled error in fetchProducts:', err)
+            // Even if it fails, we set loading false to stop the skeleton
+            setLoading(false)
         } finally {
-            clearTimeout(timeoutId)
             setLoading(false)
         }
     }
@@ -363,13 +376,32 @@ export default function CatalogPage() {
                                         }}>
                                             {product.process}
                                         </span>
+                                        {(product.status === 'Agotado' || product.stock <= 0) && (
+                                            <span style={{
+                                                position: 'absolute',
+                                                top: '12px',
+                                                right: '12px',
+                                                background: '#ef4444',
+                                                color: '#fff',
+                                                fontSize: '8px',
+                                                fontWeight: 900,
+                                                padding: '4px 10px',
+                                                borderRadius: '6px',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.15em',
+                                                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+                                                zIndex: 2,
+                                            }}>
+                                                Agotado
+                                            </span>
+                                        )}
                                     </div>
 
                                     <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                                         <div style={{ marginBottom: '12px' }}>
-                                            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '4px' }}>{product.origin.municipality}</h2>
-                                            <p style={{ color: '#6b7280', fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
-                                                {product.name} • {product.variety} • {product.gramaje || 340}g
+                                            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '4px', fontStyle: 'italic' }}>{product.name}</h2>
+                                            <p style={{ color: '#9ca3af', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                                {product.origin.municipality} • {product.variety} • {product.roast_level || 'Medio'}
                                             </p>
                                         </div>
 
@@ -406,16 +438,19 @@ export default function CatalogPage() {
                                             <div style={{ display: 'flex', gap: '8px' }}>
                                                 <button
                                                     data-testid="add-to-cart-button"
+                                                    disabled={product.status === 'Agotado' || product.stock <= 0}
                                                     onClick={() => {
                                                         addItem(product)
                                                         toast.success(`${product.name} añadido al carrito`)
                                                     }}
                                                     style={{
                                                         width: '36px', height: '36px',
-                                                        background: 'var(--color-brand-primary)', color: '#fff',
+                                                        background: (product.status === 'Agotado' || product.stock <= 0) ? 'rgba(255,255,255,0.05)' : 'var(--color-brand-primary)',
+                                                        color: (product.status === 'Agotado' || product.stock <= 0) ? '#4b5563' : '#fff',
                                                         borderRadius: '8px', border: 'none',
                                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        cursor: 'pointer',
+                                                        cursor: (product.status === 'Agotado' || product.stock <= 0) ? 'not-allowed' : 'pointer',
+                                                        opacity: (product.status === 'Agotado' || product.stock <= 0) ? 0.5 : 1,
                                                     }}
                                                 >
                                                     <ShoppingBag size={16} />
@@ -587,42 +622,79 @@ export default function CatalogPage() {
                                     <span style={{
                                         display: 'inline-flex', alignItems: 'center', gap: '8px',
                                         padding: '6px 12px', borderRadius: '20px',
-                                        background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)',
+                                        background: 'rgba(42, 157, 124, 0.1)', border: '1px solid rgba(42, 157, 124, 0.2)',
                                         marginBottom: '16px',
                                     }}>
-                                        <Wind size={12} style={{ color: 'var(--color-brand-primary)' }} />
-                                        <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--color-brand-primary)' }}>
-                                            {selectedProduct.origin.altitude} M • {selectedProduct.variety}
+                                        <Coffee size={12} style={{ color: 'var(--color-brand-primary)' }} />
+                                        <span style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--color-brand-primary)' }}>
+                                            {selectedProduct.roast_level || 'Tueste Medio'}
                                         </span>
                                     </span>
                                 </div>
-                                <h2 className="product-modal-title" style={{ fontWeight: 900, marginBottom: '12px', letterSpacing: '-0.02em', fontStyle: 'italic' }}>{selectedProduct.name}</h2>
+                                <h2 className="product-modal-title" style={{ fontWeight: 900, marginBottom: '4px', letterSpacing: '-0.02em', fontStyle: 'italic' }}>{selectedProduct.name}</h2>
+                                <p style={{ color: 'var(--color-brand-primary)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '20px' }}>
+                                    {selectedProduct.origin.municipality} • {selectedProduct.variety}
+                                </p>
                                 <p style={{ color: '#9ca3af', fontSize: '0.875rem', lineHeight: 1.7, marginBottom: '24px' }}>
                                     {selectedProduct.description}
                                 </p>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '24px' }}>
+                                    {/* Location Info */}
                                     <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                                         <p style={{ fontSize: '8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#6b7280', marginBottom: '4px' }}>Ubicación</p>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                             <MapPin style={{ color: 'var(--color-brand-primary)' }} size={12} />
-                                            <p style={{ fontWeight: 700, fontSize: '0.8rem' }}>{selectedProduct.origin.municipality}</p>
+                                            <p style={{ fontWeight: 700, fontSize: '0.8rem' }}>{selectedProduct.origin.municipality}, {selectedProduct.origin.farm || 'Finca Local'}</p>
                                         </div>
                                     </div>
+
+                                    {/* Variety & Altitude */}
                                     <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <p style={{ fontSize: '8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#6b7280', marginBottom: '4px' }}>Proceso</p>
+                                        <p style={{ fontSize: '8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#6b7280', marginBottom: '4px' }}>Variedad y Altitud</p>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                             <Wind style={{ color: 'var(--color-brand-primary)' }} size={12} />
-                                            <p style={{ fontWeight: 700, fontSize: '0.8rem' }}>{selectedProduct.process}</p>
+                                            <p style={{ fontWeight: 700, fontSize: '0.8rem' }}>{selectedProduct.variety} • {selectedProduct.origin.altitude}m</p>
                                         </div>
                                     </div>
-                                    <div style={{ gridColumn: 'span 2', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <p style={{ fontSize: '8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#6b7280', marginBottom: '4px' }}>Contenido</p>
+
+                                    {/* Process & Roast */}
+                                    <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <p style={{ fontSize: '8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#6b7280', marginBottom: '4px' }}>Proceso y Tueste</p>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <Thermometer style={{ color: 'var(--color-brand-primary)' }} size={12} />
+                                            <p style={{ fontWeight: 700, fontSize: '0.8rem' }}>{selectedProduct.process} • Tueste {selectedProduct.roast_level || 'Medio'}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Weight Info */}
+                                    <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <p style={{ fontSize: '8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#6b7280', marginBottom: '4px' }}>Presentación</p>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                             <Package style={{ color: 'var(--color-brand-primary)' }} size={12} />
                                             <p style={{ fontWeight: 700, fontSize: '0.8rem' }}>Bolsa de {selectedProduct.gramaje || 340}g</p>
                                         </div>
                                     </div>
+
+                                    {/* Tasting Notes */}
+                                    {selectedProduct.tasting_notes && selectedProduct.tasting_notes.length > 0 && (
+                                        <div style={{ gridColumn: 'span 2', padding: '16px', borderRadius: '16px', background: 'rgba(42,157,124,0.05)', border: '1px solid rgba(42,157,124,0.1)' }}>
+                                            <p style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-brand-primary)', marginBottom: '12px' }}>Perfil de Sabor (Notas de Cata)</p>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                                {selectedProduct.tasting_notes.map((note, i) => (
+                                                    <span key={i} style={{
+                                                        fontSize: '9px', fontWeight: 800,
+                                                        padding: '6px 12px', borderRadius: '8px',
+                                                        background: 'rgba(255,255,255,0.05)', color: '#fff',
+                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                        textTransform: 'uppercase'
+                                                    }}>
+                                                        {note}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="product-modal-footer" style={{
@@ -640,23 +712,26 @@ export default function CatalogPage() {
                                         </p>
                                     </div>
                                     <button
+                                        disabled={selectedProduct.status === 'Agotado' || selectedProduct.stock <= 0}
                                         onClick={() => {
                                             addItem(selectedProduct);
                                             setSelectedProduct(null);
                                             toast.success(`${selectedProduct.name} añadido al carrito`)
                                         }}
                                         style={{
-                                            background: 'var(--color-brand-primary)', color: '#fff',
+                                            background: (selectedProduct.status === 'Agotado' || selectedProduct.stock <= 0) ? 'rgba(255,255,255,0.05)' : 'var(--color-brand-primary)',
+                                            color: (selectedProduct.status === 'Agotado' || selectedProduct.stock <= 0) ? '#4b5563' : '#fff',
                                             padding: '12px 24px', borderRadius: '12px',
                                             fontWeight: 900, fontSize: '0.7rem',
                                             textTransform: 'uppercase', letterSpacing: '0.2em',
-                                            border: 'none', cursor: 'pointer',
+                                            border: 'none', cursor: (selectedProduct.status === 'Agotado' || selectedProduct.stock <= 0) ? 'not-allowed' : 'pointer',
                                             display: 'flex', alignItems: 'center', gap: '10px',
-                                            boxShadow: '0 8px 20px rgba(34, 197, 94, 0.2)'
+                                            boxShadow: (selectedProduct.status === 'Agotado' || selectedProduct.stock <= 0) ? 'none' : '0 8px 20px rgba(34, 197, 94, 0.2)',
+                                            opacity: (selectedProduct.status === 'Agotado' || selectedProduct.stock <= 0) ? 0.5 : 1,
                                         }}
                                     >
                                         <ShoppingBag size={16} />
-                                        Comprar
+                                        {(selectedProduct.status === 'Agotado' || selectedProduct.stock <= 0) ? 'Agotado' : 'Comprar'}
                                     </button>
                                 </div>
                             </div>

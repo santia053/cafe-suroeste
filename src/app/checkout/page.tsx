@@ -112,6 +112,34 @@ export default function CheckoutPage() {
                     .insert(orderItemsData)
 
                 if (itemsError) throw itemsError
+
+                // ─── 1.1 Update Stock for bought products ───
+                for (const item of productItems) {
+                    const { data: currentProduct } = await supabase
+                        .from('products')
+                        .select('stock, status')
+                        .eq('id', item.id)
+                        .single()
+
+                    if (currentProduct) {
+                        const newStock = Math.max(0, currentProduct.stock - item.quantity)
+                        let newStatus = currentProduct.status
+
+                        // If stock hits 0, it becomes Agotado (unless it was already Pausado)
+                        if (newStock <= 0 && newStatus !== 'Pausado') {
+                            newStatus = 'Agotado'
+                        }
+
+                        await supabase
+                            .from('products')
+                            .update({
+                                stock: newStock,
+                                status: newStatus,
+                                is_published: newStatus !== 'Pausado'
+                            })
+                            .eq('id', item.id)
+                    }
+                }
             }
 
             // ─── 2. Handle subscription activations (one per user) ───

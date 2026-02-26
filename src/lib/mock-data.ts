@@ -15,6 +15,8 @@ export interface Product {
     stock: number;
     image_url: string;
     gramaje: number;
+    status: string;
+    is_published: boolean;
 }
 
 export interface SubscriptionPlan {
@@ -46,6 +48,8 @@ export const MOCK_PRODUCTS: Product[] = [
         stock: 50,
         image_url: '/products/jerico.jpg',
         gramaje: 340,
+        status: 'Activo',
+        is_published: true,
     },
     {
         id: '22222222-2222-2222-2222-222222222222',
@@ -64,6 +68,8 @@ export const MOCK_PRODUCTS: Product[] = [
         stock: 35,
         image_url: '/products/concordia.jpg',
         gramaje: 340,
+        status: 'Activo',
+        is_published: true,
     },
     {
         id: '33333333-3333-3333-3333-333333333333',
@@ -82,6 +88,8 @@ export const MOCK_PRODUCTS: Product[] = [
         stock: 20,
         image_url: '/products/urrao.jpg',
         gramaje: 340,
+        status: 'Activo',
+        is_published: true,
     },
     {
         id: '44444444-4444-4444-4444-444444444444',
@@ -100,6 +108,8 @@ export const MOCK_PRODUCTS: Product[] = [
         stock: 45,
         image_url: '/products/andes.jpg',
         gramaje: 340,
+        status: 'Activo',
+        is_published: true,
     },
 ];
 

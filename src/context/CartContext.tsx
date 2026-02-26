@@ -48,6 +48,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id.includes('0000-0000') || id.startsWith('plan-')
 
     const addItem = (product: Product) => {
+        // Safety check: Don't add if out of stock
+        if (product.status === 'Agotado' || product.stock <= 0) {
+            console.warn(`Attempted to add out-of-stock product: ${product.name}`)
+            return
+        }
+
         setItems(prev => {
             // If adding a subscription, remove any other subscription first
             if (isSubscription(product.id)) {
@@ -58,7 +64,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const existing = prev.find(item => item.id === product.id)
             if (existing) {
                 return prev.map(item =>
-                    item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+                    item.id === product.id ? { ...item, quantity: Math.min(item.quantity + 1, product.stock) } : item
                 )
             }
             return [...prev, { ...product, quantity: 1 }]

@@ -30,6 +30,7 @@ const emptyProduct = {
     status: 'Activo',
     image_url: '',
     gramaje: 340,
+    is_published: true,
 }
 
 export default function AdminDashboard() {
@@ -142,7 +143,9 @@ export default function AdminDashboard() {
             price: p.price,
             stock: p.stock,
             image_url: p.image_url,
-            gramaje: p.gramaje || 340
+            gramaje: p.gramaje || 340,
+            status: p.status || 'Activo',
+            is_published: p.is_published ?? true
         })))
     }
 
@@ -236,7 +239,6 @@ export default function AdminDashboard() {
         }
     }
 
-    // --- Helpers ---
     const formatTimeAgo = (dateStr: string) => {
         try {
             const date = new Date(dateStr)
@@ -542,9 +544,10 @@ export default function AdminDashboard() {
             municipality: product.origin.municipality,
             altitude: product.origin.altitude,
             tasting_notes: product.tasting_notes.join(', '),
-            status: 'Activo',
+            status: product.status || 'Activo',
             image_url: product.image_url || '',
             gramaje: product.gramaje || 340,
+            is_published: product.is_published ?? true,
         })
         setImagePreview(product.image_url || null)
         setEditingId(product.id)
@@ -552,6 +555,13 @@ export default function AdminDashboard() {
     }
 
     const handleSave = async () => {
+        // Auto-status logic: if stock is 0 and not paused, it's exhausted.
+        let finalStatus = form.status;
+        const stockNum = Number(form.stock);
+        if (stockNum <= 0 && finalStatus !== 'Pausado') {
+            finalStatus = 'Agotado';
+        }
+
         const productData = {
             name: form.name,
             origin_farm: form.farm,
@@ -560,41 +570,47 @@ export default function AdminDashboard() {
             variety: form.variety,
             process: form.process,
             roast_level: form.roast_level,
-            tasting_notes: form.tasting_notes.split(',').map(n => n.trim()).filter(Boolean),
+            tasting_notes: Array.isArray(form.tasting_notes)
+                ? form.tasting_notes
+                : typeof form.tasting_notes === 'string'
+                    ? form.tasting_notes.split(',').map(n => n.trim()).filter(Boolean)
+                    : [],
             description: form.description,
             price: Number(form.price),
-            stock: Number(form.stock),
+            stock: stockNum,
             image_url: form.image_url || imagePreview || '/products/placeholder.jpg',
             gramaje: Number(form.gramaje),
-            is_published: true
+            status: finalStatus,
+            is_published: finalStatus !== 'Pausado'
         }
 
-        if (editingId) {
-            const { error } = await supabase
-                .from('products')
-                .update(productData)
-                .eq('id', editingId)
+        try {
+            if (editingId) {
+                const { error } = await supabase
+                    .from('products')
+                    .update(productData)
+                    .eq('id', editingId)
 
-            if (error) {
-                alert('Error al actualizar product: ' + error.message)
-                return
-            }
-        } else {
-            const { error } = await supabase
-                .from('products')
-                .insert([productData])
+                if (error) throw error
+                toast.success('Producto actualizado correctamente')
+            } else {
+                const { error } = await supabase
+                    .from('products')
+                    .insert([productData])
 
-            if (error) {
-                alert('Error al crear product: ' + error.message)
-                return
+                if (error) throw error
+                toast.success('Producto creado correctamente')
             }
+
+            await fetchProducts()
+            setShowModal(false)
+            setForm({ ...emptyProduct })
+            setEditingId(null)
+            setImagePreview(null)
+        } catch (error: any) {
+            console.error('Error saving product:', error)
+            toast.error('Error al guardar: ' + (error.message || 'Error desconocido'))
         }
-
-        fetchProducts()
-        setShowModal(false)
-        setForm({ ...emptyProduct })
-        setEditingId(null)
-        setImagePreview(null)
     }
 
     const handleDelete = async (id: string) => {
@@ -642,7 +658,20 @@ export default function AdminDashboard() {
     }
 
     const updateField = (field: string, value: string | number) => {
-        setForm(prev => ({ ...prev, [field]: value }))
+        setForm(prev => {
+            const newForm = { ...prev, [field]: value };
+
+            // Auto-update status based on stock
+            if (field === 'stock') {
+                const stockVal = Number(value);
+                if (stockVal <= 0 && prev.status !== 'Pausado') {
+                    newForm.status = 'Agotado';
+                } else if (stockVal > 0 && prev.status === 'Agotado') {
+                    newForm.status = 'Activo';
+                }
+            }
+            return newForm;
+        });
     }
 
     const compressImage = (file: File): Promise<Blob> => {
@@ -746,9 +775,6 @@ export default function AdminDashboard() {
         color: '#6b7280', marginBottom: '6px',
     }
 
-
-
-    // ... (render logic)
 
     if (authLoading || !isAdmin) {
         return (
@@ -1256,11 +1282,20 @@ export default function AdminDashboard() {
                                                             <span style={{
                                                                 display: 'inline-flex', alignItems: 'center', gap: '6px',
                                                                 padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 700,
-                                                                background: 'rgba(34,197,94,0.1)', color: '#22c55e',
-                                                                border: '1px solid rgba(34,197,94,0.2)',
+                                                                background: product.status === 'Activo' ? 'rgba(34,197,94,0.1)' :
+                                                                    product.status === 'Agotado' ? 'rgba(239,68,68,0.1)' : 'rgba(107,114,128,0.1)',
+                                                                color: product.status === 'Activo' ? '#22c55e' :
+                                                                    product.status === 'Agotado' ? '#ef4444' : '#9ca3af',
+                                                                border: '1px solid',
+                                                                borderColor: product.status === 'Activo' ? 'rgba(34,197,94,0.2)' :
+                                                                    product.status === 'Agotado' ? 'rgba(239,68,68,0.2)' : 'rgba(107,114,128,0.2)',
                                                             }}>
-                                                                <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#22c55e' }} />
-                                                                Activo
+                                                                <div style={{
+                                                                    width: '5px', height: '5px', borderRadius: '50%',
+                                                                    background: product.status === 'Activo' ? '#22c55e' :
+                                                                        product.status === 'Agotado' ? '#ef4444' : '#9ca3af'
+                                                                }} />
+                                                                {product.status}
                                                             </span>
                                                         </td>
                                                         <td style={{ padding: '14px 20px', textAlign: 'right' }}>
@@ -1972,11 +2007,11 @@ export default function AdminDashboard() {
                                             disabled={!form.name || !form.variety || !form.municipality || !form.price || !form.gramaje || isUploading}
                                             style={{
                                                 padding: '12px 24px', borderRadius: '10px',
-                                                background: (!form.name || !form.variety || !form.municipality || !form.price || isUploading) ? '#333' : 'var(--color-brand-primary)',
+                                                background: (!form.name || !form.variety || !form.municipality || !form.price || !form.gramaje || isUploading) ? '#333' : 'var(--color-brand-primary)',
                                                 border: 'none', color: '#fff', cursor: 'pointer',
                                                 fontWeight: 800, fontSize: '0.8rem',
                                                 display: 'flex', alignItems: 'center', gap: '8px',
-                                                opacity: (!form.name || !form.variety || !form.municipality || !form.price || isUploading) ? 0.4 : 1,
+                                                opacity: (!form.name || !form.variety || !form.municipality || !form.price || !form.gramaje || isUploading) ? 0.4 : 1,
                                                 boxShadow: '0 8px 20px rgba(42,157,124,0.2)',
                                             }}
                                         >
