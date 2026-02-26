@@ -30,41 +30,56 @@ export default function CatalogPage() {
 
     const fetchProducts = async () => {
         setLoading(true)
+        console.log('Fetching products from Supabase...')
 
-        // Safety timeout
+        // Safety timeout - increased to 15s to handle potentially cold project starts
         const timeoutId = setTimeout(() => {
+            if (loading) {
+                console.warn('Product fetch taking longer than 15s...')
+                setLoading(false)
+            }
+        }, 15000)
+
+        try {
+            const { data, error } = await supabase
+                .from('products')
+                .select('*')
+                .eq('is_published', true)
+
+            if (error) {
+                console.error('Supabase error fetching products:', error)
+                toast.error('Error al cargar productos. Por favor intente de nuevo.')
+                throw error
+            }
+
+            if (data) {
+                console.log(`Successfully fetched ${data.length} products`)
+                const mappedProducts: Product[] = data.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    origin: {
+                        farm: p.origin_farm,
+                        municipality: p.origin_municipality,
+                        altitude: p.origin_altitude
+                    },
+                    variety: p.variety,
+                    process: p.process,
+                    roast_level: p.roast_level,
+                    tasting_notes: p.tasting_notes,
+                    description: p.description,
+                    price: p.price,
+                    stock: p.stock,
+                    image_url: p.image_url,
+                    gramaje: p.gramaje || 340
+                }))
+                setProducts(mappedProducts)
+            }
+        } catch (err) {
+            console.error('Unhandled error in fetchProducts:', err)
+        } finally {
+            clearTimeout(timeoutId)
             setLoading(false)
-        }, 5000)
-
-        const { data, error } = await supabase
-            .from('products')
-            .select('*')
-            .eq('is_published', true)
-
-        if (data) {
-            const mappedProducts: Product[] = data.map(p => ({
-                id: p.id,
-                name: p.name,
-                origin: {
-                    farm: p.origin_farm,
-                    municipality: p.origin_municipality,
-                    altitude: p.origin_altitude
-                },
-                variety: p.variety,
-                process: p.process,
-                roast_level: p.roast_level,
-                tasting_notes: p.tasting_notes,
-                description: p.description,
-                price: p.price,
-                stock: p.stock,
-                image_url: p.image_url,
-                gramaje: p.gramaje || 340
-            }))
-            setProducts(mappedProducts)
         }
-
-        clearTimeout(timeoutId)
-        setLoading(false)
     }
 
     const toggleFilter = (type: 'process' | 'variety', value: string) => {

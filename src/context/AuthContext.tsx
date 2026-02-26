@@ -33,12 +33,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let mounted = true
 
         // Safety timeout to ensure app doesn't hang on auth check
+        // Increased to 10s for better resilience against cold starts
         const safetyTimeout = setTimeout(() => {
             if (mounted && loading) {
-                console.warn('Auth check timed out - forcing app load')
+                console.warn('Auth check taking longer than expected - allowing app to mount but state may update later')
                 setLoading(false)
             }
-        }, 5000)
+        }, 10000)
 
         // Check active sessions and sets the user
         const getSession = async () => {
